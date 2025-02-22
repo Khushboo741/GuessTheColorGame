@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuessTheColorGame</title>
+    <style>
+        body{
+            /* background-color:rgb(255,0,0); */
+            font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #options-container{
+            display:grid;
+            grid-template-columns:repeat(2,2fr); /*2fr ka matlab hai ki dono columns equal width ke honge. 
+                                                    repeat(2, 2fr) → 2 columns, har ek 2 fraction unit lega.
+                                                    Agar total space 100px hoti, to dono ko 50px milti.*/
+        }
+
+        /* CSS me > (greater than) ka matlab hota hai "Direct Child Selector".
+         Iska use sirf un elements ko target karne ke liye hota hai jo kisi parent ka direct child hain. */
+        #options-container>div{ /*Yeh sirf #options-container ke direct div elements ko target karega.*/
+            height:60px;
+            width:60px;
+            margin:5px;
+            border-radius:12px;
+            cursor:pointer;
+        }
+
+        #options-container>div:hover{  /* Jab user kisi box pe mouse hover karega, tab yeh effect lagega. */
+            scale:1.2; /*Box apni original size se 1.2x bada ho jayega.
+                           Mild zoom effect milega hover karne pe. */
+            transition:0.8s all; /* Effect smoothly 0.8 seconds me apply hoga.
+                                       Agar ye na ho to effect ekdum jhatke se apply ho jayega.*/
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1 id="color-code">
+            <!-- rgb(255,0,0) -->
+        </h1>
+    </div>
+    <div>
+        <h4>Score: <span id="score"></span></h4>
+    </div>
+    <div id="options-container"></div>
+    <script>
+
+        const colorCodeContainer=document.getElementById('color-code');
+        const optionContainer=document.getElementById("options-container");
+        let randomColor=null;
+         let score=0;
+        const scoreContainer= document.getElementById("score");
+        function generateRandomNumberBetween(mini,maxi){ //0 to 255 ke beech mein
+           return mini+Math.floor(Math.random()*(maxi-mini+1)) //formula
+            //Ye Math.random() 0 to 1 ke beech ki values like 0.something aayega
+        }
+        function generateRandomColorRGB(){
+           // rgb(onevalue,twovalue,threevalue)
+           const red=generateRandomNumberBetween(0,255);
+           const green=generateRandomNumberBetween(0,255);
+           const blue=generateRandomNumberBetween(0,255);
+           return `rgb(${red}, ${green}, ${blue})`;
+
+        }
+       // console.log(generateRandomNumberBetween(0,255)); //Generating a random number between 0 to 255
+       // console.log(generateRandomColorRGB());
+
+
+       function incrementScore(){
+        score+=1
+       scoreContainer.innerText=score;
+       }
+       function validateResult(el){
+        // console.log(el); // Color wale boxes par click karne pe element pe yani wo console me aa raha
+        //console.log(el.target);//Jis element pe click ho raha mere paas wo div element return ho raha hain
+         // const selectedColor=el.target.style.getPropertyValue('backgroundColor'); //Jis bhi button ko click karoge
+         // console.log(selectedColor);//Uska rgb mere paas aa raha hain
+
+         const selectedColor = el.target.style.backgroundColor.trim().toLowerCase(); 
+    const correctColor = randomColor.trim().toLowerCase();
+
+    //console.log(`Selected: ${selectedColor}, Correct: ${correctColor}`); // Debugging ke liye
+
+        //  console.log(selectedColor===correctColor);
+         if(selectedColor===correctColor){
+             incrementScore();
+            }
+            else{
+                score=0;
+            }
+            //Use inspect ka localStorage
+            window.localStorage.setItem('score',score); //Har baar score ko save kar rahi hu
+            //Window ko refresh karne pe bhi score save rahega
+            //Chahe sahi select karo ya galat lekin game restart to karna hain
+            startGame();
+
+       }
+
+       function startGame(){
+         score=Number(window.localStorage.getItem('score')??0);//?? is nullish operator ki agar window.localStorage.getItem(score) wali value null hain to 0 assign kardo and typcast into NUmber bcoz score pehle string me aa rha tha ab typecast se number me change ho jayega
+         scoreContainer.innerText=score;
+        optionContainer.innerHTML=null;
+             randomColor=generateRandomColorRGB();
+             colorCodeContainer.innerText=randomColor;
+
+             //To check jo 6 loop tak me elements banaye the so unn boxes(color) me se kaunsa wala  humara answer hoga
+             const ansIndex=generateRandomNumberBetween(0,5); // Ye 0 and 5 ke beech me random number generate karega
+
+             for(let i=0;i<6;i++){ //6 options generate karni hain
+              const div=document.createElement('div');
+              div.addEventListener('click',validateResult);
+              div.style.backgroundColor=i===ansIndex?randomColor:generateRandomColorRGB();
+              optionContainer.append(div);
+
+             }
+       }
+
+       window.addEventListener("load",()=>{
+        startGame()
+       })
+    </script>
+</body>
+</html>    
